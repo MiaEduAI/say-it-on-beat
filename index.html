@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Say It On Beat</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@700&family=Outfit:wght@400;700;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#f5f0e8;--card-bg:#fff;--card-border:#e0dbd2;--dim-text:#c5c0b6;--txt:#2a2520}
+body{background:var(--bg);color:var(--txt);font-family:'Outfit',sans-serif;height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center;user-select:none}
+
+/* INPUT PAGE */
+#input-page{text-align:center;max-width:540px;width:92vw}
+#input-page h1{font-family:'Space Mono',monospace;font-size:2.6rem;letter-spacing:-2px;margin-bottom:.3rem;background:linear-gradient(135deg,#e84393,#fd7272);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+#input-page .sub{color:#998f82;font-size:1rem;margin-bottom:1.2rem}
+.steps{display:flex;gap:0;margin-bottom:16px;border-bottom:2px solid var(--card-border)}
+.step-tab{flex:1;padding:10px;border:none;background:transparent;font-family:'Outfit',sans-serif;font-size:.95rem;font-weight:700;color:var(--dim-text);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s}
+.step-tab.active{color:#e84393;border-bottom-color:#e84393}
+.step-tab:hover{color:var(--txt)}
+.step-desc{color:#998f82;font-size:.88rem;margin-bottom:12px;line-height:1.5}
+.prompt-box{text-align:left;background:var(--card-bg);border:1px solid var(--card-border);border-radius:10px;padding:14px;font-size:.72rem;line-height:1.5;color:#665e54;max-height:260px;overflow-y:auto;margin-bottom:12px;white-space:pre-wrap;word-break:break-word}
+.copy-btn{padding:12px 36px;border:2px solid #e84393;border-radius:10px;background:#e84393;color:#fff;font-family:'Outfit',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s}
+.copy-btn:hover{background:#d63784;transform:scale(1.03)}
+.copy-toast{color:#27ae60;font-size:.85rem;margin-top:8px;opacity:0;transition:opacity .3s}
+.copy-toast.show{opacity:1}
+.step-hint{color:var(--dim-text);font-size:.8rem;margin-top:14px}
+#input-page textarea{width:100%;height:180px;border:2px solid var(--card-border);border-radius:12px;padding:14px;font-family:'Space Mono',monospace;font-size:.82rem;background:var(--card-bg);color:var(--txt);resize:none;outline:none}
+#input-page textarea:focus{border-color:#e84393}
+#input-page textarea::placeholder{color:var(--dim-text);font-family:'Space Mono',monospace;font-size:.75rem}
+.gen-btn{margin-top:16px;padding:14px 48px;border:none;border-radius:10px;background:linear-gradient(135deg,#e84393,#fd7272);color:#fff;font-family:'Outfit',sans-serif;font-size:1.1rem;font-weight:700;cursor:pointer;transition:all .2s}
+.gen-btn:hover{transform:scale(1.04);box-shadow:0 4px 20px #e8439340}
+.err{color:#e74c3c;font-size:.85rem;margin-top:10px;min-height:20px}
+.fmt{text-align:left;color:#998f82;font-size:.78rem;margin-top:14px;line-height:1.6;background:var(--card-bg);padding:12px 14px;border-radius:8px;border:1px solid var(--card-border)}
+.fmt code{font-family:'Space Mono',monospace;font-size:.75rem;color:#e84393}
+
+/* MENU */
+#menu{display:none;text-align:center}
+#menu h1{font-family:'Space Mono',monospace;font-size:3rem;letter-spacing:-2px;margin-bottom:.2rem;background:linear-gradient(135deg,#e84393,#fd7272);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+#menu .sub{color:#998f82;font-size:1.1rem;margin-bottom:2rem}
+.levels{display:flex;flex-direction:column;gap:10px;align-items:center;margin-bottom:20px}
+.lbtn{width:320px;padding:13px 18px;border:2px solid;border-radius:10px;background:transparent;font-family:'Outfit',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s;display:flex;justify-content:space-between}
+.lbtn:hover{transform:scale(1.04)}
+.lbtn.c1{color:#27ae60;border-color:#27ae60}.lbtn.c1:hover{background:#27ae6010}
+.lbtn.c2{color:#2980b9;border-color:#2980b9}.lbtn.c2:hover{background:#2980b910}
+.lbtn.c3{color:#e67e22;border-color:#e67e22}.lbtn.c3:hover{background:#e67e2210}
+.lbtn.c4{color:#e74c3c;border-color:#e74c3c}.lbtn.c4:hover{background:#e74c3c10}
+.lbtn.c5{color:#8e44ad;border-color:#8e44ad}.lbtn.c5:hover{background:#8e44ad10}
+.bpm{font-size:.75rem;opacity:.5}
+.back-link{color:#998f82;font-size:.85rem;cursor:pointer;margin-top:12px;text-decoration:underline}
+
+/* MODE SELECT */
+#mode-select{display:none;text-align:center}
+#mode-select h2{font-family:'Space Mono',monospace;font-size:1.6rem;margin-bottom:.5rem}
+#mode-select .mode-sub{color:#998f82;font-size:.95rem;margin-bottom:1.8rem}
+.modes{display:flex;flex-direction:column;gap:10px;align-items:center}
+.mbtn2{width:320px;padding:14px 18px;border:2px solid var(--card-border);border-radius:10px;background:var(--card-bg);font-family:'Outfit',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:left;color:var(--txt)}
+.mbtn2:hover{transform:scale(1.03);border-color:#e84393}
+.mbtn2 .ml{font-size:.8rem;color:#998f82;margin-top:2px}
+
+/* GAME */
+#game{display:none;width:100%;height:100%;flex-direction:column;align-items:center;justify-content:center}
+#game-header{text-align:center;margin-bottom:36px}
+#game-header h2{font-family:'Space Mono',monospace;font-size:1.3rem;letter-spacing:3px;opacity:.5;margin-bottom:4px}
+#game-header .ri{font-size:1.1rem;font-weight:700;opacity:.8}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(2,1fr);gap:14px;max-width:880px;width:90vw}
+.cell{background:var(--card-bg);border:3px solid var(--card-border);border-radius:14px;display:flex;align-items:center;justify-content:center;padding:26px 14px;font-family:'Space Mono',monospace;font-size:2.6rem;font-weight:700;color:var(--dim-text);position:relative;overflow:hidden}
+.cell.active{animation:pop .16s ease-out}
+@keyframes pop{0%{transform:scale(1.08)}100%{transform:scale(1)}}
+
+/* OVERLAY */
+#overlay{display:none;position:fixed;inset:0;background:rgba(245,240,232,.92);z-index:50;align-items:center;justify-content:center}
+#overlay .num{font-family:'Space Mono',monospace;font-size:11rem;font-weight:700}
+
+/* END */
+#end{display:none;text-align:center}
+#end h2{font-family:'Space Mono',monospace;font-size:2.8rem;margin-bottom:.6rem}
+#end p{color:#998f82;font-size:1rem;margin-bottom:1.5rem}
+.ebtn{padding:13px 36px;border:2px solid;border-radius:10px;font-family:'Outfit',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s}
+.ebtn:hover{transform:scale(1.04)}
+.ebtn.primary{background:#27ae60;color:#fff;border-color:#27ae60}
+.ebtn.ghost{background:transparent;color:#998f82;border-color:#d0c9be}
+
+#fs{position:fixed;bottom:14px;right:14px;padding:5px 12px;border:1px solid #d0c9be;border-radius:6px;background:transparent;color:#998f82;font-size:.7rem;cursor:pointer;z-index:99}
+@keyframes fadeIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+#input-page,#menu,#mode-select,#end{animation:fadeIn .4s ease}
+</style>
+</head>
+<body>
+
+<!-- INPUT PAGE -->
+<div id="input-page">
+  <h1>SAY IT ON BEAT</h1>
+  <p class="sub">3步生成课堂节奏词汇游戏 🎤</p>
+
+  <!-- Step tabs -->
+  <div class="steps">
+    <button class="step-tab active" id="tab1" onclick="showStep(1)">① 复制Prompt</button>
+    <button class="step-tab" id="tab2" onclick="showStep(2)">② 粘贴词汇</button>
+  </div>
+
+  <!-- STEP 1 -->
+  <div id="step1">
+    <p class="step-desc">把下面的Prompt复制给任何AI（ChatGPT、豆包、Kimi、Claude…），告诉AI你的学科和主题，它会帮你选词分组。</p>
+    <div class="prompt-box" id="prompt-box"></div>
+    <button class="copy-btn" onclick="copyPrompt()">📋 复制Prompt</button>
+    <div class="copy-toast" id="toast">✅ 已复制！去找AI对话吧</div>
+    <p class="step-hint">拿到AI生成的结果后，点上方「② 粘贴词汇」</p>
+  </div>
+
+  <!-- STEP 2 -->
+  <div id="step2" style="display:none">
+    <p class="step-desc">把AI给你的7行文本粘贴到这里：</p>
+    <textarea id="paste" placeholder="SAY IT ON BEAT
+IGCSE Economics 🎤
+TAX,TRADE,WAGE,PRICE,COST,GROWTH,LAND,RENT
+DEMAND,SUPPLY,PROFIT,MARKET,EXPORT,IMPORT,OUTPUT,INCOME
+PROFIT,MARKET,BUDGET,SURPLUS,QUOTA,LABOUR,WEALTH,INCOME
+TRADE,TAX,TARIFF,WAGE,LAND,LOAN,LABOUR,RENT
+TAX,TARIFF,TRADE,TARIFF,TAX,TRADE,TARIFF,TAX"></textarea>
+    <div class="err" id="err"></div>
+    <button class="gen-btn" onclick="parse()">生成游戏 🎮</button>
+    <div class="fmt">
+      <strong>格式：</strong>第1行标题，第2行学科名，第3-7行每行8个词用逗号分隔
+    </div>
+  </div>
+</div>
+
+<!-- MENU -->
+<div id="menu">
+  <h1 id="m-title"></h1>
+  <p class="sub" id="m-sub"></p>
+  <div class="levels" id="lv-btns"></div>
+  <div class="back-link" onclick="backToInput()">← 返回粘贴页面</div>
+</div>
+
+<!-- MODE SELECT -->
+<div id="mode-select">
+  <h2 id="ms-title"></h2>
+  <p class="mode-sub">选择模式</p>
+  <div class="modes">
+    <button class="mbtn2" onclick="play('classic')">🟢 经典模式<div class="ml">按顺序走一遍</div></button>
+    <button class="mbtn2" onclick="play('random')">🔀 随机模式<div class="ml">随机跳着高亮</div></button>
+    <button class="mbtn2" onclick="play('accel')">🔥 加速模式<div class="ml">越来越快，看你能撑多久</div></button>
+    <button class="mbtn2" onclick="play('memory')">🧠 记忆模式<div class="ml">先看一遍，然后全变成 ???</div></button>
+  </div>
+  <div class="back-link" onclick="backToMenu()">← 返回选关</div>
+</div>
+
+<!-- OVERLAY -->
+<div id="overlay"><div class="num" id="cd"></div></div>
+
+<!-- GAME -->
+<div id="game">
+  <div id="game-header"><h2 id="lv-name"></h2><div class="ri" id="ri"></div></div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<!-- END -->
+<div id="end">
+  <h2 id="et"></h2><p id="es"></p>
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+    <button class="ebtn ghost" onclick="backToMode()">换模式</button>
+    <button class="ebtn primary" id="next-btn" onclick="nextLv()">NEXT LEVEL →</button>
+    <button class="ebtn ghost" onclick="backToMenu()">选关</button>
+  </div>
+</div>
+
+<button id="fs" onclick="document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()">⛶ Fullscreen</button>
+
+<script>
+// PROMPT TEXT
+const PROMPT=`你是一个课堂游戏设计助手。帮老师生成 Say It On Beat 节奏词汇游戏的词汇配置。
+
+请先问我两个问题：
+1. 我教什么学科、什么课程体系？
+2. 想覆盖哪个单元/主题？还是整个学科的基础核心词汇？
+
+收到回答后，请直接帮我选词并分成5组（每组8个词），不要列词库让我挑。
+
+选词规则：
+- 只选1-2个音节的词，不要3音节及以上
+- 只选最核心、学生一定见过的术语，总数不超过40个
+- 用该学科的教学语言
+- 超过2音节的术语如有常用缩写可用（如GDP），否则不选
+
+分组规则：
+- Level 1 Easy：全1音节，尽量押韵（如TRADE/WAGE, COST/LOST, RENT/SPENT），节奏干脆
+- Level 2 Medium：全2音节，尽量对仗配对（如demand/supply, export/import）或押韵（如PROFIT/AUDIT, MARKET/TARGET）
+- Level 3 Hard：2音节混搭，押韵但无顺序规律
+- Level 4 Chaos：1-2音节混合，相似发音/相同首字母/押韵的词挨着（绊嘴效果最大化）
+- Level 5 Boss：3-4个发音最相似或押韵的词反复交错排成8位（tongue twister）
+
+押韵优先级：尾音相同 > 首字母相同 > 音节结构相似。如果某学科很难找到押韵词，退回到发音相似即可，不要为了押韵选不核心的词。
+
+先展示5组让我确认，我说"好的"后，请严格输出以下格式（共7行，不要加任何其他内容）：
+
+SAY IT ON BEAT
+学科名
+Level1的8个词用逗号分隔
+Level2的8个词用逗号分隔
+Level3的8个词用逗号分隔
+Level4的8个词用逗号分隔
+Level5的8个词用逗号分隔`;
+
+// Init prompt box
+document.getElementById('prompt-box').textContent=PROMPT;
+
+function copyPrompt(){
+  navigator.clipboard.writeText(PROMPT).then(()=>{
+    const t=document.getElementById('toast');
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'),2500);
+  });
+}
+
+function showStep(n){
+  document.getElementById('step1').style.display=n===1?'block':'none';
+  document.getElementById('step2').style.display=n===2?'block':'none';
+  document.getElementById('tab1').classList.toggle('active',n===1);
+  document.getElementById('tab2').classList.toggle('active',n===2);
+}
+const COLORS=['#27ae60','#2980b9','#e67e22','#e74c3c','#8e44ad'];
+const BPMS=[120,140,160,180,200];
+const LNAMES=['LEVEL 1 — EASY','LEVEL 2 — MEDIUM','LEVEL 3 — HARD','LEVEL 4 — CHAOS','LEVEL 5 — BOSS'];
+const LEMOJI=['🟢','🟡','🟠','🔴','💀'];
+
+let levels=[],curLv=0,curMode='',ctx,timer,playing=false,gameTitle='',gameSub='';
+
+const $=id=>document.getElementById(id);
+function hide(...ids){ids.forEach(id=>$(id).style.display='none')}
+function show(id,f){$(id).style.display=f?'flex':'block'}
+
+// PARSE
+function parse(){
+  const raw=$('paste').value.trim();
+  if(!raw){$('err').textContent='请粘贴内容';return}
+  const lines=raw.split('\n').map(l=>l.trim()).filter(l=>l);
+  if(lines.length<7){$('err').textContent='格式不对：需要7行（标题+学科+5组词）';return}
+  gameTitle=lines[0];
+  gameSub=lines[1];
+  levels=[];
+  for(let i=0;i<5;i++){
+    const words=lines[i+2].split(/[,，]/).map(w=>w.trim().toUpperCase()).filter(w=>w);
+    if(words.length<8){$('err').textContent=`第${i+1}组词不够8个（只有${words.length}个）`;return}
+    levels.push({name:LNAMES[i],words:words.slice(0,8),bpm:BPMS[i],color:COLORS[i]});
+  }
+  $('err').textContent='';
+  showMenu();
+}
+
+// MENU
+function showMenu(){
+  hide('input-page','mode-select','game','end','overlay');
+  show('menu');
+  $('m-title').textContent=gameTitle;
+  $('m-sub').textContent=gameSub;
+  const cont=$('lv-btns');
+  cont.innerHTML='';
+  levels.forEach((lv,i)=>{
+    const b=document.createElement('button');
+    b.className=`lbtn c${i+1}`;
+    b.innerHTML=`<span>${lv.name} ${LEMOJI[i]}</span><span class="bpm">${lv.bpm} BPM</span>`;
+    b.onclick=()=>selectLv(i);
+    cont.appendChild(b);
+  });
+}
+
+function selectLv(i){
+  curLv=i;
+  hide('menu');
+  show('mode-select');
+  $('ms-title').textContent=levels[i].name+' '+LEMOJI[i];
+  $('ms-title').style.color=levels[i].color;
+}
+
+// PLAY
+function play(mode){
+  curMode=mode;
+  if(!ctx)ctx=new(window.AudioContext||window.webkitAudioContext)();
+  hide('mode-select');
+  countdown(()=>runGame());
+}
+
+function beep(f=880,d=.05,v=.22){
+  if(!ctx)return;
+  const o=ctx.createOscillator(),g=ctx.createGain();
+  o.connect(g);g.connect(ctx.destination);o.frequency.value=f;o.type='square';
+  g.gain.setValueAtTime(v,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+d);
+  o.start();o.stop(ctx.currentTime+d);
+}
+
+function countdown(cb){
+  show('overlay','flex');
+  const el=$('cd');let n=3;
+  function t(){
+    if(n===0){el.textContent='GO!';el.style.color='#27ae60';beep(1200,.1,.3);setTimeout(()=>{hide('overlay');cb()},400);return}
+    el.textContent=n;el.style.color='#2a2520';beep(600,.07,.18);n--;setTimeout(t,600);
+  }t();
+}
+
+function runGame(){
+  const lv=levels[curLv];
+  show('game','flex');
+  $('lv-name').textContent=lv.name;
+  $('lv-name').style.color=lv.color;
+  const modeLabels={classic:'经典',random:'🔀 随机',accel:'🔥 加速',memory:'🧠 记忆'};
+  $('ri').textContent=modeLabels[curMode]||'';
+  $('ri').style.color=lv.color;
+
+  const grid=$('grid');grid.innerHTML='';
+  const cells=[];
+  lv.words.forEach(w=>{
+    const d=document.createElement('div');
+    d.className='cell';d.textContent=w;d.style.color='var(--dim-text)';
+    d.style.borderColor='var(--card-border)';d.style.background='var(--card-bg)';
+    grid.appendChild(d);cells.push(d);
+  });
+
+  playing=true;
+  const baseInterval=60000/lv.bpm;
+
+  function off(ci){
+    const c=cells[ci];c.className='cell';
+    c.style.color='var(--dim-text)';c.style.borderColor='var(--card-border)';
+    c.style.background='var(--card-bg)';c.style.boxShadow='';
+  }
+  function on(ci){
+    const c=cells[ci];c.className='cell active';
+    c.style.color=lv.color;c.style.borderColor=lv.color;
+    c.style.background=lv.color+'15';c.style.boxShadow=`0 0 28px ${lv.color}40`;
+  }
+  function shuffle(){
+    const a=[0,1,2,3,4,5,6,7];
+    for(let i=7;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;
+  }
+
+  if(curMode==='classic'){
+    let i=0,prev=-1;
+    setTimeout(function beat(){
+      if(i>=8||!playing){if(prev>=0)off(prev);setTimeout(()=>{hide('game');showEnd()},300);return}
+      if(prev>=0)off(prev);on(i);beep();prev=i;i++;timer=setTimeout(beat,baseInterval);
+    },baseInterval);
+
+  }else if(curMode==='random'){
+    const order=shuffle();let i=0,prev=-1;
+    setTimeout(function beat(){
+      if(i>=8||!playing){if(prev>=0)off(prev);setTimeout(()=>{hide('game');showEnd()},300);return}
+      if(prev>=0)off(prev);on(order[i]);beep();prev=order[i];i++;timer=setTimeout(beat,baseInterval);
+    },baseInterval);
+
+  }else if(curMode==='accel'){
+    let i=0,prev=-1,intv=baseInterval;
+    setTimeout(function beat(){
+      if(i>=8||!playing){if(prev>=0)off(prev);setTimeout(()=>{hide('game');showEnd()},300);return}
+      if(prev>=0)off(prev);on(i);beep();prev=i;i++;
+      intv=intv*0.85; // 每次快15%
+      timer=setTimeout(beat,intv);
+    },baseInterval);
+
+  }else if(curMode==='memory'){
+    // Round 1: show all in order
+    $('ri').textContent='🧠 先看一遍...';
+    let i=0,prev=-1;
+    setTimeout(function beat(){
+      if(i>=8||!playing){
+        if(prev>=0)off(prev);
+        // pause then hide words
+        setTimeout(()=>{
+          $('ri').textContent='🧠 凭记忆！';
+          cells.forEach(c=>{c.setAttribute('data-word',c.textContent);c.textContent='???';});
+          // Round 2: go again, reveal on hit
+          let j=0,prev2=-1;
+          setTimeout(function beat2(){
+            if(j>=8||!playing){if(prev2>=0){off(prev2);cells[prev2].textContent='???';}setTimeout(()=>{hide('game');showEnd()},300);return}
+            if(prev2>=0){off(prev2);cells[prev2].textContent='???';}
+            on(j);cells[j].textContent=cells[j].getAttribute('data-word');
+            beep();prev2=j;j++;timer=setTimeout(beat2,baseInterval);
+          },baseInterval);
+        },800);
+        return;
+      }
+      if(prev>=0)off(prev);on(i);beep();prev=i;i++;timer=setTimeout(beat,baseInterval);
+    },baseInterval);
+  }
+}
+
+function showEnd(){
+  show('end');
+  $('et').textContent='🎤 DONE!';$('et').style.color=levels[curLv].color;
+  if(curLv<levels.length-1){
+    $('es').textContent='Ready for '+levels[curLv+1].name+'?';
+    $('next-btn').style.display='inline-block';
+    $('next-btn').style.borderColor=levels[curLv+1].color;
+    $('next-btn').style.background=levels[curLv+1].color;
+  }else{
+    $('es').textContent='All levels complete! 🔥';
+    $('next-btn').style.display='none';
+  }
+}
+
+function nextLv(){if(curLv<levels.length-1){curLv++;selectLv(curLv);}else backToMenu();}
+function backToMode(){hide('end');selectLv(curLv);}
+function backToMenu(){hide('mode-select','game','end','overlay');playing=false;clearTimeout(timer);showMenu();}
+function backToInput(){hide('menu');show('input-page');}
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){playing=false;clearTimeout(timer);if(levels.length)backToMenu();else backToInput();}});
+</script>
+</body>
+</html>
