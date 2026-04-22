@@ -11,7 +11,7 @@
 body{background:var(--bg);color:var(--txt);font-family:'Outfit',sans-serif;height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center;user-select:none}
 
 /* INPUT PAGE */
-#input-page{text-align:center;max-width:540px;width:92vw}
+#input-page{text-align:center;max-width:540px;width:92vw;max-height:90vh;overflow-y:auto;padding:10px 0}
 #input-page h1{font-family:'Space Mono',monospace;font-size:2.6rem;letter-spacing:-2px;margin-bottom:.3rem;background:linear-gradient(135deg,#e84393,#fd7272);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 #input-page .sub{color:#998f82;font-size:1rem;margin-bottom:1.2rem}
 .steps{display:flex;gap:0;margin-bottom:16px;border-bottom:2px solid var(--card-border)}
@@ -25,6 +25,23 @@ body{background:var(--bg);color:var(--txt);font-family:'Outfit',sans-serif;heigh
 .copy-toast{color:#27ae60;font-size:.85rem;margin-top:8px;opacity:0;transition:opacity .3s}
 .copy-toast.show{opacity:1}
 .step-hint{color:var(--dim-text);font-size:.8rem;margin-top:14px}
+.demo-divider{display:flex;align-items:center;gap:12px;margin:20px 0 14px;color:var(--dim-text);font-size:.8rem}
+.demo-divider::before,.demo-divider::after{content:'';flex:1;height:1px;background:var(--card-border)}
+.demo-btn{width:100%;padding:18px;border:none;border-radius:12px;background:linear-gradient(135deg,#e84393,#fd7272);color:#fff;font-family:'Outfit',sans-serif;font-size:1.15rem;font-weight:700;cursor:pointer;transition:all .2s}
+.demo-btn:hover{transform:scale(1.03);box-shadow:0 4px 24px #e8439340}
+.demo-hint{color:var(--dim-text);font-size:.8rem;margin-top:8px}
+.custom-divider{display:flex;align-items:center;gap:12px;margin:28px 0 12px;color:var(--dim-text);font-size:.85rem}
+.custom-divider::before,.custom-divider::after{content:'';flex:1;height:1px;background:var(--card-border)}
+.expand-btn{width:100%;padding:12px;border:2px solid var(--card-border);border-radius:10px;background:var(--card-bg);color:#998f82;font-family:'Outfit',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;transition:all .2s}
+.expand-btn:hover{border-color:#e84393;color:var(--txt)}
+.expand-btn.open{border-color:#e84393;color:#e84393}
+
+/* Editable word grid in menu */
+.edit-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:600px;width:90vw;margin:0 auto 16px}
+.edit-cell{background:var(--card-bg);border:2px solid var(--card-border);border-radius:10px;padding:10px 6px;font-family:'Space Mono',monospace;font-size:1.1rem;font-weight:700;color:var(--txt);text-align:center;cursor:text;outline:none;transition:border-color .2s}
+.edit-cell:focus{border-color:#e84393}
+.edit-label{font-size:.8rem;font-weight:700;margin:14px 0 6px;opacity:.5}
+.edit-hint{color:var(--dim-text);font-size:.75rem;margin-bottom:16px}
 #input-page textarea{width:100%;height:180px;border:2px solid var(--card-border);border-radius:12px;padding:14px;font-family:'Space Mono',monospace;font-size:.82rem;background:var(--card-bg);color:var(--txt);resize:none;outline:none}
 #input-page textarea:focus{border-color:#e84393}
 #input-page textarea::placeholder{color:var(--dim-text);font-family:'Space Mono',monospace;font-size:.75rem}
@@ -35,10 +52,10 @@ body{background:var(--bg);color:var(--txt);font-family:'Outfit',sans-serif;heigh
 .fmt code{font-family:'Space Mono',monospace;font-size:.75rem;color:#e84393}
 
 /* MENU */
-#menu{display:none;text-align:center}
+#menu{display:none;text-align:center;max-height:100vh;overflow-y:auto;padding:20px 0}
 #menu h1{font-family:'Space Mono',monospace;font-size:3rem;letter-spacing:-2px;margin-bottom:.2rem;background:linear-gradient(135deg,#e84393,#fd7272);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 #menu .sub{color:#998f82;font-size:1.1rem;margin-bottom:2rem}
-.levels{display:flex;flex-direction:column;gap:10px;align-items:center;margin-bottom:20px}
+.levels{display:flex;flex-direction:column;gap:4px;align-items:center;margin-bottom:20px;width:100%}
 .lbtn{width:320px;padding:13px 18px;border:2px solid;border-radius:10px;background:transparent;font-family:'Outfit',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s;display:flex;justify-content:space-between}
 .lbtn:hover{transform:scale(1.04)}
 .lbtn.c1{color:#27ae60;border-color:#27ae60}.lbtn.c1:hover{background:#27ae6010}
@@ -91,39 +108,45 @@ body{background:var(--bg);color:var(--txt);font-family:'Outfit',sans-serif;heigh
 <!-- INPUT PAGE -->
 <div id="input-page">
   <h1>SAY IT ON BEAT</h1>
-  <p class="sub">3步生成课堂节奏词汇游戏 🎤</p>
+  <p class="sub">课堂节奏词汇游戏 🎤</p>
 
-  <!-- Step tabs -->
-  <div class="steps">
-    <button class="step-tab active" id="tab1" onclick="showStep(1)">① 复制Prompt</button>
-    <button class="step-tab" id="tab2" onclick="showStep(2)">② 粘贴词汇</button>
-  </div>
+  <button class="demo-btn" onclick="loadDemo()">🎯 立即体验 — IGCSE Economics</button>
+  <p class="demo-hint">点击直接开始，感受节奏挑战</p>
 
-  <!-- STEP 1 -->
-  <div id="step1">
-    <p class="step-desc">把下面的Prompt复制给任何AI（ChatGPT、豆包、Kimi、Claude…），告诉AI你的学科和主题，它会帮你选词分组。</p>
-    <div class="prompt-box" id="prompt-box"></div>
-    <button class="copy-btn" onclick="copyPrompt()">📋 复制Prompt</button>
-    <div class="copy-toast" id="toast">✅ 已复制！去找AI对话吧</div>
-    <p class="step-hint">拿到AI生成的结果后，点上方「② 粘贴词汇」</p>
-  </div>
+  <div class="custom-divider"><span>想做你自己学科的版本？</span></div>
+  <button class="expand-btn" id="expand-btn" onclick="toggleCustom()">📝 定制我的游戏 ▾</button>
 
-  <!-- STEP 2 -->
-  <div id="step2" style="display:none">
-    <p class="step-desc">把AI给你的7行文本粘贴到这里：</p>
-    <textarea id="paste" placeholder="SAY IT ON BEAT
+  <div id="custom-panel" style="display:none">
+    <div class="steps">
+      <button class="step-tab active" id="tab1" onclick="showStep(1)">① 复制Prompt</button>
+      <button class="step-tab" id="tab2" onclick="showStep(2)">② 粘贴词汇</button>
+    </div>
+
+    <div id="step1">
+      <p class="step-desc">把Prompt复制给任何AI（ChatGPT、豆包、Kimi、Claude…），AI会帮你选词分组。</p>
+      <div class="prompt-box" id="prompt-box"></div>
+      <button class="copy-btn" onclick="copyPrompt()">📋 复制Prompt</button>
+      <div class="copy-toast" id="toast">✅ 已复制！去找AI对话吧</div>
+      <p class="step-hint">拿到结果后，点上方「② 粘贴词汇」</p>
+    </div>
+
+    <div id="step2" style="display:none">
+      <p class="step-desc">把AI给你的7行文本粘贴到这里：</p>
+      <textarea id="paste" placeholder="SAY IT ON BEAT
 IGCSE Economics 🎤
 TAX,TRADE,WAGE,PRICE,COST,GROWTH,LAND,RENT
 DEMAND,SUPPLY,PROFIT,MARKET,EXPORT,IMPORT,OUTPUT,INCOME
 PROFIT,MARKET,BUDGET,SURPLUS,QUOTA,LABOUR,WEALTH,INCOME
 TRADE,TAX,TARIFF,WAGE,LAND,LOAN,LABOUR,RENT
 TAX,TARIFF,TRADE,TARIFF,TAX,TRADE,TARIFF,TAX"></textarea>
-    <div class="err" id="err"></div>
-    <button class="gen-btn" onclick="parse()">生成游戏 🎮</button>
-    <div class="fmt">
-      <strong>格式：</strong>第1行标题，第2行学科名，第3-7行每行8个词用逗号分隔
+      <div class="err" id="err"></div>
+      <button class="gen-btn" onclick="parse()">生成游戏 🎮</button>
+      <div class="fmt">
+        <strong>格式：</strong>第1行标题，第2行学科名，第3-7行每行8个词用逗号分隔
+      </div>
     </div>
   </div>
+</div>
 </div>
 
 <!-- MENU -->
@@ -220,6 +243,20 @@ function showStep(n){
   document.getElementById('tab1').classList.toggle('active',n===1);
   document.getElementById('tab2').classList.toggle('active',n===2);
 }
+
+function toggleCustom(){
+  const panel=$('custom-panel');
+  const btn=$('expand-btn');
+  if(panel.style.display==='none'){
+    panel.style.display='block';
+    btn.textContent='📝 定制我的游戏 ▴';
+    btn.classList.add('open');
+  }else{
+    panel.style.display='none';
+    btn.textContent='📝 定制我的游戏 ▾';
+    btn.classList.remove('open');
+  }
+}
 const COLORS=['#27ae60','#2980b9','#e67e22','#e74c3c','#8e44ad'];
 const BPMS=[120,140,160,180,200];
 const LNAMES=['LEVEL 1 — EASY','LEVEL 2 — MEDIUM','LEVEL 3 — HARD','LEVEL 4 — CHAOS','LEVEL 5 — BOSS'];
@@ -230,6 +267,29 @@ let levels=[],curLv=0,curMode='',ctx,timer,playing=false,gameTitle='',gameSub=''
 const $=id=>document.getElementById(id);
 function hide(...ids){ids.forEach(id=>$(id).style.display='none')}
 function show(id,f){$(id).style.display=f?'flex':'block'}
+
+// DEMO DATA
+const DEMO_DATA={
+  title:'SAY IT ON BEAT',
+  sub:'IGCSE Economics 🎤',
+  words:[
+    ['TAX','TRADE','WAGE','PRICE','COST','GROWTH','LAND','RENT'],
+    ['DEMAND','SUPPLY','PROFIT','MARKET','EXPORT','IMPORT','OUTPUT','INCOME'],
+    ['PROFIT','MARKET','BUDGET','SURPLUS','QUOTA','LABOUR','WEALTH','INCOME'],
+    ['TRADE','TAX','TARIFF','WAGE','LAND','LOAN','LABOUR','RENT'],
+    ['TAX','TARIFF','TRADE','TARIFF','TAX','TRADE','TARIFF','TAX']
+  ]
+};
+
+function loadDemo(){
+  gameTitle=DEMO_DATA.title;
+  gameSub=DEMO_DATA.sub;
+  levels=[];
+  for(let i=0;i<5;i++){
+    levels.push({name:LNAMES[i],words:[...DEMO_DATA.words[i]],bpm:BPMS[i],color:COLORS[i]});
+  }
+  showMenu();
+}
 
 // PARSE
 function parse(){
@@ -256,14 +316,50 @@ function showMenu(){
   $('m-title').textContent=gameTitle;
   $('m-sub').textContent=gameSub;
   const cont=$('lv-btns');
-  cont.innerHTML='';
+  cont.innerHTML='<p class="edit-hint">💡 点击任意单词可直接修改</p>';
   levels.forEach((lv,i)=>{
+    // Level label + play button
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:8px;width:100%;max-width:600px;margin:0 auto';
     const b=document.createElement('button');
     b.className=`lbtn c${i+1}`;
     b.innerHTML=`<span>${lv.name} ${LEMOJI[i]}</span><span class="bpm">${lv.bpm} BPM</span>`;
-    b.onclick=()=>selectLv(i);
-    cont.appendChild(b);
+    b.onclick=()=>{syncWords(i);selectLv(i);};
+    row.appendChild(b);
+    cont.appendChild(row);
+
+    // Editable word grid
+    const grid=document.createElement('div');
+    grid.className='edit-grid';
+    grid.id='edit-grid-'+i;
+    lv.words.forEach((w,j)=>{
+      const cell=document.createElement('input');
+      cell.type='text';
+      cell.className='edit-cell';
+      cell.value=w;
+      cell.dataset.lv=i;
+      cell.dataset.idx=j;
+      cell.style.borderColor=lv.color+'60';
+      cell.onfocus=()=>{cell.style.borderColor=lv.color;};
+      cell.onblur=()=>{cell.style.borderColor=lv.color+'60';};
+      grid.appendChild(cell);
+    });
+    cont.appendChild(grid);
   });
+}
+
+function syncWords(lvIndex){
+  const grid=$('edit-grid-'+lvIndex);
+  if(!grid)return;
+  const inputs=grid.querySelectorAll('.edit-cell');
+  inputs.forEach((inp,j)=>{
+    const val=inp.value.trim().toUpperCase();
+    if(val)levels[lvIndex].words[j]=val;
+  });
+}
+
+function syncAllWords(){
+  for(let i=0;i<levels.length;i++)syncWords(i);
 }
 
 function selectLv(i){
@@ -402,7 +498,7 @@ function showEnd(){
 function nextLv(){if(curLv<levels.length-1){curLv++;selectLv(curLv);}else backToMenu();}
 function backToMode(){hide('end');selectLv(curLv);}
 function backToMenu(){hide('mode-select','game','end','overlay');playing=false;clearTimeout(timer);showMenu();}
-function backToInput(){hide('menu');show('input-page');}
+function backToInput(){hide('menu');show('input-page');showStep(1);}
 
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){playing=false;clearTimeout(timer);if(levels.length)backToMenu();else backToInput();}});
 </script>
