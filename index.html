@@ -132,17 +132,14 @@ body{background:var(--bg);color:var(--txt);font-family:'Outfit',sans-serif;heigh
 
     <div id="step2" style="display:none">
       <p class="step-desc">把AI给你的7行文本粘贴到这里：</p>
-      <textarea id="paste" placeholder="SAY IT ON BEAT
-IGCSE Economics 🎤
-TAX,TRADE,WAGE,PRICE,COST,GROWTH,LAND,RENT
+      <textarea id="paste" placeholder="TAX,TRADE,WAGE,PRICE,COST,GROWTH,LAND,RENT
 DEMAND,SUPPLY,PROFIT,MARKET,EXPORT,IMPORT,OUTPUT,INCOME
 PROFIT,MARKET,BUDGET,SURPLUS,QUOTA,LABOUR,WEALTH,INCOME
-TRADE,TAX,TARIFF,WAGE,LAND,LOAN,LABOUR,RENT
-TAX,TARIFF,TRADE,TARIFF,TAX,TRADE,TARIFF,TAX"></textarea>
+...（每行8个词，逗号分隔，最多10行）"></textarea>
       <div class="err" id="err"></div>
       <button class="gen-btn" onclick="parse()">生成游戏 🎮</button>
       <div class="fmt">
-        <strong>格式：</strong>第1行标题，第2行学科名，第3-7行每行8个词用逗号分隔
+        <strong>格式：</strong>每行8个词用逗号分隔，1-10行，直接粘贴词汇即可
       </div>
     </div>
   </div>
@@ -199,32 +196,27 @@ const PROMPT=`你是一个课堂游戏设计助手。帮老师生成 Say It On B
 1. 我教什么学科、什么课程体系？
 2. 想覆盖哪个单元/主题？还是整个学科的基础核心词汇？
 
-收到回答后，请直接帮我选词并分成5组（每组8个词），不要列词库让我挑。
+收到回答后，请直接帮我选词并分成10组（每组8个词），不要列词库让我挑。
 
 选词规则：
 - 只选1-2个音节的词，不要3音节及以上
-- 只选最核心、学生一定见过的术语，总数不超过40个
+- 只选最核心、学生一定见过的术语，总数不超过80个
 - 用该学科的教学语言
 - 超过2音节的术语如有常用缩写可用（如GDP），否则不选
 
 分组规则：
-- Level 1 Easy：全1音节，尽量押韵（如TRADE/WAGE, COST/LOST, RENT/SPENT），节奏干脆
-- Level 2 Medium：全2音节，尽量对仗配对（如demand/supply, export/import）或押韵（如PROFIT/AUDIT, MARKET/TARGET）
-- Level 3 Hard：2音节混搭，押韵但无顺序规律
-- Level 4 Chaos：1-2音节混合，相似发音/相同首字母/押韵的词挨着（绊嘴效果最大化）
-- Level 5 Boss：3-4个发音最相似或押韵的词反复交错排成8位（tongue twister）
+- 每组8个词，尽量押韵或发音相似
+- 押韵优先级：尾音相同 > 首字母相同 > 音节结构相似
+- 部分组可以安排对仗配对（如demand/supply, export/import）
+- 部分组故意把相似发音的词挨着放，制造绊嘴效果
+- 如果某学科很难找到押韵词，退回到发音相似即可，不要为了押韵选不核心的词
+- 难度从第1组到第10组递增
 
-押韵优先级：尾音相同 > 首字母相同 > 音节结构相似。如果某学科很难找到押韵词，退回到发音相似即可，不要为了押韵选不核心的词。
+先展示10组让我确认，我说"好的"后，请严格输出以下格式（共10行，每行8个词用逗号分隔，不要加标题、编号或任何其他内容）：
 
-先展示5组让我确认，我说"好的"后，请严格输出以下格式（共7行，不要加任何其他内容）：
-
-SAY IT ON BEAT
-学科名
-Level1的8个词用逗号分隔
-Level2的8个词用逗号分隔
-Level3的8个词用逗号分隔
-Level4的8个词用逗号分隔
-Level5的8个词用逗号分隔`;
+TAX,TRADE,WAGE,PRICE,COST,GROWTH,LAND,RENT
+DEMAND,SUPPLY,PROFIT,MARKET,EXPORT,IMPORT,OUTPUT,INCOME
+...（共10行）`;
 
 // Init prompt box
 document.getElementById('prompt-box').textContent=PROMPT;
@@ -257,10 +249,10 @@ function toggleCustom(){
     btn.classList.remove('open');
   }
 }
-const COLORS=['#27ae60','#2980b9','#e67e22','#e74c3c','#8e44ad'];
-const BPMS=[120,140,160,180,200];
-const LNAMES=['LEVEL 1 — EASY','LEVEL 2 — MEDIUM','LEVEL 3 — HARD','LEVEL 4 — CHAOS','LEVEL 5 — BOSS'];
-const LEMOJI=['🟢','🟡','🟠','🔴','💀'];
+const COLORS=['#27ae60','#2980b9','#e67e22','#e74c3c','#8e44ad','#16a085','#2c3e50','#d35400','#c0392b','#8e44ad'];
+const BPM=180;
+const LNAMES=['ROUND 1','ROUND 2','ROUND 3','ROUND 4','ROUND 5','ROUND 6','ROUND 7','ROUND 8','ROUND 9','ROUND 10'];
+const LEMOJI=['①','②','③','④','⑤','⑥','⑦','⑧','⑨','⑩'];
 
 let levels=[],curLv=0,curMode='',ctx,timer,playing=false,gameTitle='',gameSub='';
 
@@ -275,8 +267,13 @@ const DEMO_DATA={
   words:[
     ['TAX','TRADE','WAGE','PRICE','COST','GROWTH','LAND','RENT'],
     ['DEMAND','SUPPLY','PROFIT','MARKET','EXPORT','IMPORT','OUTPUT','INCOME'],
-    ['PROFIT','MARKET','BUDGET','SURPLUS','QUOTA','LABOUR','WEALTH','INCOME'],
+    ['SAVE','SPEND','LOAN','LEND','EARN','BURN','GAIN','DRAIN'],
+    ['QUOTA','LABOUR','BUDGET','SURPLUS','WELFARE','MERGER','WEALTH','INCOME'],
+    ['PROFIT','MARKET','OUTPUT','OUTLAY','INCOME','INVEST','EXPORT','EFFORT'],
     ['TRADE','TAX','TARIFF','WAGE','LAND','LOAN','LABOUR','RENT'],
+    ['SHARE','DEBT','GROWTH','RATE','COST','LOSS','PRICE','RISE'],
+    ['SUPPLY','SUBSIDY','SURPLUS','SUPPLY','SUBSIDY','SURPLUS','SUPPLY','SURPLUS'],
+    ['DEMAND','DEFEND','DEFLATE','DEMAND','DEBIT','DEFICIT','DEMAND','DEFLATE'],
     ['TAX','TARIFF','TRADE','TARIFF','TAX','TRADE','TARIFF','TAX']
   ]
 };
@@ -285,8 +282,8 @@ function loadDemo(){
   gameTitle=DEMO_DATA.title;
   gameSub=DEMO_DATA.sub;
   levels=[];
-  for(let i=0;i<5;i++){
-    levels.push({name:LNAMES[i],words:[...DEMO_DATA.words[i]],bpm:BPMS[i],color:COLORS[i]});
+  for(let i=0;i<DEMO_DATA.words.length;i++){
+    levels.push({name:LNAMES[i],words:[...DEMO_DATA.words[i]],bpm:BPM,color:COLORS[i%COLORS.length]});
   }
   showMenu();
 }
@@ -295,15 +292,16 @@ function loadDemo(){
 function parse(){
   const raw=$('paste').value.trim();
   if(!raw){$('err').textContent='请粘贴内容';return}
-  const lines=raw.split('\n').map(l=>l.trim()).filter(l=>l);
-  if(lines.length<7){$('err').textContent='格式不对：需要7行（标题+学科+5组词）';return}
-  gameTitle=lines[0];
-  gameSub=lines[1];
+  const lines=raw.split('\n').map(l=>l.trim()).filter(l=>l&&l.includes(','));
+  if(lines.length<1){$('err').textContent='没有找到词汇行（每行8个词用逗号分隔）';return}
+  if(lines.length>10)lines.length=10;
+  gameTitle='SAY IT ON BEAT';
+  gameSub='Custom Game 🎤';
   levels=[];
-  for(let i=0;i<5;i++){
-    const words=lines[i+2].split(/[,，]/).map(w=>w.trim().toUpperCase()).filter(w=>w);
-    if(words.length<8){$('err').textContent=`第${i+1}组词不够8个（只有${words.length}个）`;return}
-    levels.push({name:LNAMES[i],words:words.slice(0,8),bpm:BPMS[i],color:COLORS[i]});
+  for(let i=0;i<lines.length;i++){
+    const words=lines[i].split(/[,，]/).map(w=>w.trim().toUpperCase()).filter(w=>w);
+    if(words.length<8){$('err').textContent=`第${i+1}行词不够8个（只有${words.length}个）`;return}
+    levels.push({name:LNAMES[i]||'ROUND '+(i+1),words:words.slice(0,8),bpm:BPM,color:COLORS[i%COLORS.length]});
   }
   $('err').textContent='';
   showMenu();
@@ -322,8 +320,8 @@ function showMenu(){
     const row=document.createElement('div');
     row.style.cssText='display:flex;align-items:center;gap:8px;width:100%;max-width:600px;margin:0 auto';
     const b=document.createElement('button');
-    b.className=`lbtn c${i+1}`;
-    b.innerHTML=`<span>${lv.name} ${LEMOJI[i]}</span><span class="bpm">${lv.bpm} BPM</span>`;
+    b.className=`lbtn c${(i%5)+1}`;
+    b.innerHTML=`<span>${lv.name} ${LEMOJI[i]||''}</span><span class="bpm">${BPM} BPM</span>`;
     b.onclick=()=>{syncWords(i);selectLv(i);};
     row.appendChild(b);
     cont.appendChild(row);
@@ -366,7 +364,7 @@ function selectLv(i){
   curLv=i;
   hide('menu');
   show('mode-select');
-  $('ms-title').textContent=levels[i].name+' '+LEMOJI[i];
+  $('ms-title').textContent=levels[i].name+' '+(LEMOJI[i]||'');
   $('ms-title').style.color=levels[i].color;
 }
 
